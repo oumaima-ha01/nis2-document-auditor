@@ -1,0 +1,16 @@
+.venv/
+.venv-smoke/
+.venv-smoke-data/
+.env
+data/
+catalog/
+demo-documents/
+dist/
+build/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+tests/
+scripts/
+.git/
+*.pyc

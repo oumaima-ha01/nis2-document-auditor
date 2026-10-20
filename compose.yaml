@@ -1,0 +1,19 @@
+services:
+  auditor:
+    build: .
+    ports:
+      - "127.0.0.1:${NIS2_HOST_PORT:-8000}:8000"
+    environment:
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.openai.com/v1}
+      AI_TEXT_MODEL: ${AI_TEXT_MODEL:-}
+      AI_VISION_MODEL: ${AI_VISION_MODEL:-}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+      CATALOG_MODE: ${CATALOG_MODE:-demo}
+    volumes:
+      - auditor_data:/data
+    restart: unless-stopped
+    init: true
+
+volumes:
+  auditor_data:

@@ -1,0 +1,37 @@
+name: Tests et image Docker
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Installer et tester le paquet
+        run: |
+          python -m pip install '.[test]'
+          python -m pytest -q
+      - name: Construire l'image et valider Compose
+        run: |
+          docker compose config --quiet
+          docker build --tag nis2-auditor:ci .
+      - name: Tester l'interface et l'API dans le conteneur
+        run: |
+          docker run --detach --name nis2-auditor-ci --publish 127.0.0.1:18000:8000 nis2-auditor:ci
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18000/api/health > /dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl --fail --silent --show-error http://127.0.0.1:18000/api/health
+          curl --fail --silent --show-error http://127.0.0.1:18000/ > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:18000/static/app.js > /dev/null
+      - name: Journaux du conteneur en cas d'échec
+        if: failure()
+        run: docker logs nis2-auditor-ci || true

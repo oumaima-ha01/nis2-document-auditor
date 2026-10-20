@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NIS2 Auditor — atelier local</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="mark">N</span><div><strong>NIS2 Auditor</strong><small>Atelier documentaire</small></div></div>
+      <div class="side-label">Dossiers</div>
+      <div id="audit-list" class="audit-list"></div>
+      <button id="new-audit" class="secondary full" type="button">Nouveau dossier</button>
+      <div class="sidebar-bottom"><span id="ai-indicator" class="dot"></span><span id="ai-label">Mode local</span></div>
+    </aside>
+    <main class="content">
+      <header class="topbar"><h1 id="page-title">Choisir un dossier</h1><span class="tag">NIS2 · Art. 21(2)</span></header>
+      <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
+      <section id="welcome" class="welcome panel"><h2>Analyser un dossier documentaire</h2><p>Créez un dossier, importez sa documentation SI et examinez les passages liés aux exigences. Vous gardez la décision finale sur chaque constat.</p><button id="welcome-create" class="primary" type="button">Créer un dossier</button></section>
+      <div id="workspace" class="hidden">
+        <div class="toolbar"><div class="tabs" role="tablist" aria-label="Vues du dossier"><button class="tab active" id="tab-documents" type="button" role="tab" data-tab="documents" aria-controls="documents-view" aria-selected="true">Documents</button><button class="tab" id="tab-matrix" type="button" role="tab" data-tab="matrix" aria-controls="matrix-view" aria-selected="false" tabindex="-1">Matrice</button></div><span id="audit-status" class="status">Brouillon</span><div class="export-actions"><button id="export-json-btn" class="secondary" type="button">Exporter JSON</button><button id="export-btn" class="secondary" type="button">Exporter CSV</button></div></div>
+        <section id="documents-view" role="tabpanel" aria-labelledby="tab-documents">
+          <div class="two-col">
+            <div class="panel"><div class="section-head"><div><h2>Profil de l’entité</h2><p>Utilisé pour l’applicabilité. Confirmez ces informations avant l’analyse.</p></div></div>
+              <form id="profile-form"><label>Catégorie d’entité<select id="entity-type"><option value="unknown">À déterminer</option><option value="important">Entité importante</option><option value="essential">Entité essentielle</option></select></label><label>Secteur ou activité<input id="sector" placeholder="Ex. fournisseur de services numériques"></label><label>Pays<input id="country" value="France"></label><button class="secondary" type="submit">Enregistrer le profil</button></form>
+            </div>
+            <div class="panel"><div class="section-head"><div><h2>Importer des documents</h2><p>PDF, DOCX, XLSX, CSV, PNG ou JPEG · 25 Mo maximum par fichier</p></div></div>
+              <label for="files" class="dropzone"><strong>Choisir des fichiers</strong><span>ou les déposer ici</span><input type="file" id="files" multiple accept=".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg"></label>
+              <div id="upload-progress" class="small muted" role="status" aria-live="polite"></div>
+            </div>
+          </div>
+          <div class="panel document-panel"><div class="section-head"><div><h2>Pièces du dossier</h2><p id="document-count">Aucun document</p></div><button id="run-btn" class="primary">Lancer l’analyse</button></div><div id="documents-list" class="document-list empty">Importez au moins un document pour commencer.</div></div>
+        </section>
+        <section id="matrix-view" class="hidden" role="tabpanel" aria-labelledby="tab-matrix"><div class="matrix-head"><div><h2>Matrice d’exigences</h2><p>Les passages repérés ne prouvent pas seuls qu’un contrôle est appliqué.</p></div><label class="filter-label" for="status-filter">Filtrer par statut<select id="status-filter"><option value="all">Tous les statuts</option><option value="uncertain">À vérifier</option><option value="no_evidence">Preuve non trouvée</option><option value="supported">Couvert</option><option value="partially_supported">Partiel</option><option value="conflicting_evidence">Contradictoire</option></select></label></div><div id="matrix-list" class="matrix-list"></div></section>
+      </div>
+    </main>
+  </div>
+  <dialog id="dialog" class="modal" aria-labelledby="dialog-title"><div class="modal-card"><div class="dialog-heading"><h2 id="dialog-title">Nouveau dossier d’audit</h2><button id="close-dialog" class="close" type="button">Fermer</button></div><p>Utilisez uniquement des documents fictifs pour une démo publique.</p><form id="create-form"><label>Nom du dossier<input id="audit-name" required minlength="2" placeholder="Ex. Société Démo"></label><p id="create-error" class="form-error hidden" role="alert"></p><button class="primary" type="submit">Créer le dossier</button></form></div></dialog>
+  <dialog id="review-drawer" class="drawer" aria-labelledby="drawer-title"><div class="drawer-header"><div><div class="requirement-code" id="drawer-code"></div><h2 id="drawer-title"></h2></div><button id="close-drawer" class="close" type="button">Fermer</button></div><p id="drawer-summary"></p><div id="drawer-assessment"></div><div id="drawer-evidence"></div><div id="drawer-preview"></div><div id="drawer-review"></div></dialog>
+  <script src="/static/app.js"></script>
+</body>
+</html>
+

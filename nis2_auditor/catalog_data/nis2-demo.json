@@ -1,0 +1,18 @@
+{
+  "id": "nis2-demo-2026-10",
+  "title": "Catalogue de démonstration — NIS2 article 21(2)",
+  "disclaimer": "Résumé technique de démonstration. Consulter le texte officiel et les mesures nationales applicables avant tout audit réel.",
+  "source_url": "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
+  "requirements": [
+    {"id":"NIS2-21-2-A","title":"Analyse des risques et sécurité des SI","summary":"Politiques relatives à l'analyse des risques et à la sécurité des systèmes d'information.","keywords":["analyse de risques","risque cyber","politique de sécurité","PSSI","cartographie des risques"]},
+    {"id":"NIS2-21-2-B","title":"Gestion des incidents","summary":"Dispositif de traitement des incidents de sécurité.","keywords":["incident","détection","escalade","réponse aux incidents","journal d'incident"]},
+    {"id":"NIS2-21-2-C","title":"Continuité et sauvegardes","summary":"Continuité d'activité, sauvegarde et reprise après sinistre, gestion de crise.","keywords":["sauvegarde","restauration","PRA","PCA","continuité","crise"]},
+    {"id":"NIS2-21-2-D","title":"Chaîne d'approvisionnement","summary":"Sécurité des fournisseurs et prestataires directs.","keywords":["fournisseur","prestataire","sous-traitant","chaîne d'approvisionnement","tiers"]},
+    {"id":"NIS2-21-2-E","title":"Acquisition et développement sécurisés","summary":"Sécurité de l'acquisition, du développement et de la maintenance, traitement des vulnérabilités.","keywords":["développement sécurisé","vulnérabilité","correctif","patch","maintenance"]},
+    {"id":"NIS2-21-2-F","title":"Évaluation de l'efficacité","summary":"Politiques et procédures pour apprécier l'efficacité des mesures cyber.","keywords":["audit","contrôle","test","efficacité","évaluation"]},
+    {"id":"NIS2-21-2-G","title":"Hygiène cyber et formation","summary":"Pratiques élémentaires de cybersécurité et formation.","keywords":["sensibilisation","formation","hygiène","phishing","cybersécurité"]},
+    {"id":"NIS2-21-2-H","title":"Cryptographie et chiffrement","summary":"Politiques et procédures de cryptographie et, le cas échéant, de chiffrement.","keywords":["chiffrement","cryptographie","clé","TLS","encryption"]},
+    {"id":"NIS2-21-2-I","title":"Ressources humaines et accès","summary":"Sécurité RH, contrôle des accès et gestion des actifs.","keywords":["habilitations","contrôle d'accès","revue des droits","inventaire","actifs"]},
+    {"id":"NIS2-21-2-J","title":"Authentification et communications","summary":"Authentification multifactorielle ou continue et communications sécurisées, selon le besoin.","keywords":["MFA","authentification multifacteur","double facteur","communication sécurisée","messagerie sécurisée"]}
+  ]
+}
