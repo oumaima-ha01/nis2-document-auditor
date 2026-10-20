@@ -1,10 +1,58 @@
-# NIS2 Auditor — audit documentaire local
+# NIS2 Document Auditor
 
-Audit documentaire assisté : import PDF, DOCX, XLSX, CSV et images ; passages avec page, paragraphe ou cellule ; matrice NIS2/ReCyF ; analyse IA facultative ; revue humaine ; exports CSV et JSON. Ce prototype ne remplace pas un auditeur ni une analyse juridique.
+Un outil local pour rapprocher une documentation SI des exigences NIS2, retrouver les passages pertinents et préparer une revue humaine traçable. Il ne délivre pas de certification de conformité.
 
-## Installation rapide, sans Docker
+[Voir les tests et la construction Docker](https://github.com/oumaima-ha01/nis2-document-auditor/actions/workflows/ci.yml)
 
-Python 3.11 ou 3.12 est requis. Depuis le dossier du projet :
+## Le projet
+
+Un audit documentaire oblige à parcourir des politiques, procédures et registres de formats différents, puis à justifier chaque constat avec une source vérifiable. NIS2 Document Auditor rassemble ce travail dans une interface : on crée un dossier, on importe les documents, on lance l'analyse et on examine une matrice d'exigences avec ses passages candidats.
+
+Le parti pris est de **ne jamais confondre un document qui décrit un contrôle avec la preuve que ce contrôle fonctionne**. Les résultats automatiques restent des propositions à revoir, et l'absence de passage retrouvé n'est pas présentée comme une preuve d'absence du contrôle.
+
+Ce projet met en pratique une chaîne d'AI engineering complète : ingestion de fichiers hétérogènes, extraction avec provenance, lecture visuelle facultative, recherche de passages, évaluation par LLM facultative, validation des citations, revue humaine et export.
+
+## Essayer l'application
+
+Avec Docker Desktop ou Docker Engine et Compose :
+
+```sh
+git clone https://github.com/oumaima-ha01/nis2-document-auditor.git
+cd nis2-document-auditor
+docker compose up --build -d
+```
+
+Ouvrir [http://127.0.0.1:8000](http://127.0.0.1:8000). L'interface et l'API tournent dans le même conteneur ; un volume Docker conserve les dossiers et les documents entre deux démarrages. `docker compose down` arrête l'application sans supprimer ces données. Si le port 8000 est occupé, définir `NIS2_HOST_PORT=8080` dans un fichier `.env` à la racine du projet.
+
+Pour faire un premier parcours, les trois fichiers de [`demo-documents/`](demo-documents/) sont fictifs :
+
+1. Créer un dossier et choisir « Entité importante ».
+2. Importer le PDF, le document Word et le classeur Excel.
+3. Lancer l'analyse, ouvrir un constat et remonter à son passage source.
+4. Enregistrer une revue humaine, puis exporter la matrice en CSV ou JSON.
+
+Aucune clé d'API n'est nécessaire pour cette démonstration : sans IA configurée, l'application propose des passages candidats à vérifier.
+
+## Comment fonctionne la chaîne
+
+1. **Ingestion** — Contrôle du type et de la taille, puis stockage local des PDF, DOCX, XLSX, CSV et images.
+2. **Lecture** — Extraction du texte avec sa provenance (page, paragraphe ou cellule). Les pages PDF peu lisibles et les images peuvent passer par un modèle de vision si celui-ci est configuré ; sinon, leur lecture est signalée comme incomplète.
+3. **Rapprochement** — Sélection de passages candidats pour chaque exigence du catalogue. Un modèle texte facultatif propose un statut et une justification ; les citations qui ne correspondent pas au texte source sont rejetées.
+4. **Décision** — L'utilisateur examine les éléments, consigne sa revue et exporte les résultats.
+
+Le backend est en Python/FastAPI avec SQLite et des traitements en arrière-plan dans le processus. L'interface utilise JavaScript et CSS sans serveur frontend distinct. Le paquet Python est défini dans [`pyproject.toml`](pyproject.toml) ; [`Dockerfile`](Dockerfile) installe ce même paquet, et [`compose.yaml`](compose.yaml) expose uniquement l'adresse locale `127.0.0.1`.
+
+## Référentiels et IA
+
+Le catalogue par défaut résume, pour la démonstration, les dix familles de mesures de l'[article 21(2) de la directive NIS2](https://eur-lex.europa.eu/eli/dir/2022/2555/oj). `CATALOG_MODE=recyf` charge un catalogue de 152 mesures extraites du [document de travail ReCyF v2.5 de l'ANSSI](https://messervices.cyber.gouv.fr/documents-ressources/20260317_NIS_V2_ReCyF_v2.5.pdf). Cette extraction et les règles d'applicabilité simplifiées doivent être vérifiées avant tout usage réel.
+
+Pour activer l'analyse IA, copier [`.env.example`](.env.example) vers `.env`, puis renseigner `AI_API_KEY`, `AI_TEXT_MODEL` et, pour les pages scannées, `AI_VISION_MODEL`. `AI_BASE_URL` permet d'utiliser une API compatible Chat Completions avec sortie JSON. **Avec l'IA activée, des extraits de documents ou des images de pages sont transmis au fournisseur configuré.** N'utiliser des documents sensibles qu'après avoir vérifié les conditions de ce fournisseur.
+
+## Installation sans Docker
+
+Le projet s'installe aussi comme paquet Python. Python 3.11 ou 3.12 est recommandé.
+
+Sous Windows (PowerShell) :
 
 ```powershell
 python -m venv .venv
@@ -20,47 +68,13 @@ python3 -m venv .venv
 ./.venv/bin/nis2-auditor serve
 ```
 
-Ouvrir <http://127.0.0.1:8000>. L'application, l'interface et les catalogues sont installés dans le paquet Python ; elle fonctionne depuis n'importe quel répertoire de travail. Pour distribuer un seul fichier de paquet, construire une roue avec `python -m pip wheel . --no-deps -w dist`, copier le `.whl` sur l'autre machine puis l'installer avec `python -m pip install chemin/vers/nis2_document_auditor-0.2.0-py3-none-any.whl`. L'installation récupère les dépendances depuis PyPI ; elle nécessite donc Internet ou un cache de paquets.
+Ouvrir ensuite [http://127.0.0.1:8000](http://127.0.0.1:8000). Par défaut, les données sont placées dans le répertoire utilisateur prévu par le système ; `NIS2_DATA_DIR` permet de choisir un autre emplacement.
 
-La commande `nis2-auditor serve --port 8080` permet de choisir le port. Le serveur écoute uniquement sur `127.0.0.1` par défaut. `python -m nis2_auditor serve` fonctionne également si le lanceur n'est pas dans le `PATH`.
-
-Les données (base SQLite, documents, pages rendues) sont conservées dans le répertoire de données de l'utilisateur, défini par le système d'exploitation. Définir `NIS2_DATA_DIR` pour choisir un dossier explicite. Un `.env` dans le répertoire courant est lu au démarrage ; voir `.env.example`.
-
-Sur cette machine de développement, `run-local.ps1` garde les dossiers d'audit existants dans `data/` et démarre la version installée dans `.venv`.
-
-## Docker — interface et API dans une seule image
-
-L'image installe le paquet Python, l'API FastAPI, l'interface statique et les deux catalogues. Aucun serveur frontend ni Python hôte supplémentaire n'est nécessaire. Avec Docker Desktop ou Docker Engine et Compose :
+## Tests et périmètre
 
 ```sh
-docker compose up --build -d
-docker compose ps
-docker compose logs -f auditor
+python -m pip install '.[test]'
+python -m pytest -q
 ```
 
-Ouvrir <http://127.0.0.1:8000>. `docker compose down` arrête le service sans supprimer le volume `auditor_data`. La configuration IA peut être placée dans `.env` avant le démarrage ; Compose transmet ces valeurs au conteneur. Le port est lié à `127.0.0.1` sur l'hôte, car cette version n'a pas d'authentification.
-
-Si le port 8000 est déjà occupé, définir `NIS2_HOST_PORT=8080` dans `.env`, puis ouvrir <http://127.0.0.1:8080>. Vérifier l'API avec `docker compose exec auditor python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/health').read().decode())"`. Les documents et la base restent dans le volume nommé après recréation du conteneur. `docker compose down -v` supprimerait ce volume et toutes les données d'audit ; ne l'utiliser que si c'est volontaire.
-
-Le paquet Python est la voie d'installation prioritaire. L'image Docker utilise ce même paquet ; aucun Python du poste hôte n'est utilisé par le conteneur. Le conteneur tourne avec un utilisateur non privilégié et stocke ses données dans un volume nommé.
-
-Sous Windows, Docker Desktop nécessite un moteur Linux fonctionnel. Si WSL 2 n'est pas encore activé, lancer `wsl --install --no-distribution` dans un PowerShell **administrateur**, redémarrer, puis démarrer Docker Desktop avec le backend WSL 2. Une distribution Ubuntu n'est pas nécessaire pour lancer les conteneurs depuis PowerShell.
-
-## Catalogues et IA
-
-Le catalogue de démonstration reprend les dix familles de mesures de l'article 21(2) de NIS2. Le paquet contient également 152 mesures extraites du document de travail ReCyF v2.5. Pour utiliser celles-ci, définir `CATALOG_MODE=recyf` dans `.env` puis redémarrer. `nis2-auditor build-catalog` télécharge à nouveau le PDF officiel et génère une copie du catalogue dans le dossier de données ; cette copie prend alors priorité sur celle fournie dans le paquet. L'extraction automatique et l'applicabilité doivent être relues avant tout audit réel.
-
-Pour activer l'IA, renseigner `AI_API_KEY`, `AI_BASE_URL`, `AI_TEXT_MODEL` et `AI_VISION_MODEL` dans `.env` pour une API compatible Chat Completions avec sortie JSON. Le modèle texte évalue les passages trouvés ; les citations inventées sont rejetées. Le modèle vision transcrit les pages PDF sans texte exploitable et les images. Sans API, la recherche locale signale des passages candidats « À vérifier » ; une image ou page scannée non lue reste en lecture partielle. **Ne pas exposer cette version sur Internet ni importer des documents confidentiels dans une démonstration publique.**
-
-## Démonstration et tests
-
-Depuis le dépôt source, `python scripts/make_demo.py` crée trois documents fictifs dans `demo-documents/`. Créer un dossier dans l'interface, choisir « Entité importante », déposer ces fichiers, lancer l'analyse, examiner les preuves et enregistrer une revue.
-
-Pour installer et exécuter les tests de développement :
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install '.[test]'
-.\.venv\Scripts\python.exe -m pytest -q
-```
-
-L'application actuelle est volontairement locale, sans authentification, stockage objet ni workers persistants. Ne pas la publier telle quelle comme service accessible sur Internet.
+La [CI](https://github.com/oumaima-ha01/nis2-document-auditor/actions/workflows/ci.yml) exécute les tests, construit l'image et vérifie que le conteneur sert l'API et l'interface. L'application reste un projet de démonstration local : pas d'authentification, pas d'isolation multi-client et pas de conclusion juridique automatique. **Ne pas l'exposer telle quelle sur Internet.**
